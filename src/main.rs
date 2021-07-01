@@ -1,50 +1,39 @@
+mod args;
 mod input;
+mod matcher;
 mod output;
 
-use clap::Clap;
-
-#[derive(Clap)]
-#[clap(version = "0.1.0")]
-struct Opts {
-	#[clap(long, short="i")]
-	ignore_case: bool,
-	#[clap(long, short="v")]
-	invert_match: bool,
-	#[clap(long, short="F")]
-	fixed_strings: bool,
-	#[clap(required = true)]
-	pattern: String,
-	#[clap()]
-	files: Vec<String>
-}
-
 fn main() {
-	let (matchers, linesources, should_match) = {
-		let mut opts = Opts::parse();
-		let patterns = std::iter::once(opts.pattern);
-		let mut rsb = if opts.fixed_strings {
-			regex::RegexSetBuilder::new(patterns.map(|p| { regex::escape(&p) }))
-		} else {
-			regex::RegexSetBuilder::new(patterns)
-		};
-		rsb.case_insensitive(opts.ignore_case);
+	let (matchers, linesources) = {
+		use clap::Clap;
+		let mut opts = args::Args::parse();
 		let mut linesources = Vec::<input::LineSource>::new();
 		linesources.reserve(opts.files.len());
 		if input::extend_with_linesources(opts.files.drain(0..), &mut linesources) {
 			std::process::exit(1);
 		}
+		let patterns = std::iter::once(&opts.pattern);
 		(
-			rsb.build().unwrap(),
+			if opts.fixed_strings {
+				matcher::Matchers::from_exact(patterns, &opts.match_opts)
+			} else {
+				matcher::Matchers::from_regexes(patterns, &opts.match_opts)
+			}.unwrap(),
 			linesources,
-			!opts.invert_match
 		)
 	};
 	for linesrc in linesources {
 		let mut printer = output::BuffingPrinter::new();
 		output::print_line(linesrc.name());
+		let mut is_inside = false;
 		linesrc.for_lines(|line| {
-			let matched = matchers.is_match(&line) == should_match;
-			printer.push(line, matched);
+			use matcher::MatchType as Mt;
+			let (matches, new_inside) = match matchers.match_on(&line, is_inside) {
+				Mt::NoMatch => (false, is_inside),
+				Mt::Start   => (true, true),
+			};
+			is_inside = new_inside;
+			printer.push(line, matches);
 		});
 	}
 }

@@ -1,5 +1,7 @@
 use std::io::Write;
 
+//TODO: This file needs a rename and a restructure.
+
 #[allow(unused_must_use)]
 pub fn print_line(line: &str) {
 	//println! panics on a broken pipe. We want silent failure.
