@@ -22,18 +22,27 @@ fn main() {
 			linesources,
 		)
 	};
-	for linesrc in linesources {
-		let mut printer = output::BuffingPrinter::new();
-		output::print_line(linesrc.name());
-		let mut is_inside = false;
-		linesrc.for_lines(|line| {
-			use matcher::MatchType as Mt;
-			let (matches, new_inside) = match matchers.match_on(&line, is_inside) {
-				Mt::NoMatch => (false, is_inside),
-				Mt::Start   => (true, true),
-			};
-			is_inside = new_inside;
-			printer.push(line, !matches);
-		});
+	if linesources.len() > 1 {
+		for linesrc in linesources {
+			process_lines(&matchers, &linesrc, true)
+		}
+	} else {
+		process_lines(&matchers, linesources.first().expect("linesources is somehow empty"), false)
 	}
+}
+
+// This is temporary.
+fn process_lines(matchers: &matcher::Matchers, linesrc: &input::LineSource, print_prefix: bool) {
+	let mut printer = output::BuffingPrinter::new();
+	let mut is_inside = false;
+	let prefix = if print_prefix {linesrc.name()} else {""};
+	linesrc.for_lines(|line| {
+		use matcher::MatchType as Mt;
+		let (matches, new_inside) = match matchers.match_on(&line, is_inside) {
+			Mt::NoMatch => (false, is_inside),
+			Mt::Start   => (true, true),
+		};
+		is_inside = new_inside;
+		printer.push(line, !matches, prefix);
+	});
 }

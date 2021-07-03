@@ -26,7 +26,7 @@ impl LineSource {
 
 	pub fn name(&self) -> &str {
 		match self {
-			LineSource::Stdin(_) => "stdin",
+			LineSource::Stdin(_) => "(standard input)",
 			LineSource::File(name, _) => name
 		}
 	}
