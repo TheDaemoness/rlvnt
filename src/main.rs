@@ -33,7 +33,7 @@ fn main() {
 				Mt::Start   => (true, true),
 			};
 			is_inside = new_inside;
-			printer.push(line, matches);
+			printer.push(line, !matches);
 		});
 	}
 }
