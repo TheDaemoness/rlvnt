@@ -1,11 +1,12 @@
+_rlvnt should be considered alpha-quality.
+It is usable, but its interface and feature set will change._
+
 # rlvnt
 __A tool for extracting the broadly-defined "relevant" parts of logs.__
 
-**rlvnt** is a tool to extract ranges of text from text logs.
-It provides more general options for marking the
-beginnings and ends of ranges than your usual
-`/pattern/,/pattern/` awk operation,
-including operations based on *the last line containing a match*.
+**rlvnt** is a tool to extract ranges of lines from text.
+Its focus is on extracting lines until the last line
+where some condition is met.
 
-It does this while remaining reasonably memory-light.
-The entire input will be buffered into memory only in the worst case.
+**rlvnt** will only fully buffer the input in worst-case scenarios.
+
