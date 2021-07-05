@@ -21,9 +21,9 @@ impl Matcher {
 		match rsb.build() {
 			Ok(v)  => Ok(
 				if opts.invert_match {
-					Matcher::Basic(v)
-				} else {
 					Matcher::Invert(v)
+				} else {
+					Matcher::Basic(v)
 				}
 			),
 			Err(e) => Err(MatcherError::BuildRegexSet(e))

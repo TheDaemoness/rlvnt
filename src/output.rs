@@ -1,6 +1,6 @@
 use std::io::Write;
 
-//TODO: This file needs a rename and a restructure.
+//TODO: This file will be removed soon.
 
 #[allow(unused_must_use)]
 pub fn print_line(prefix: &str, line: &str) {
@@ -15,26 +15,20 @@ pub fn print_line(prefix: &str, line: &str) {
 
 /** Storing and printing lines.*/
 pub struct BuffingPrinter {
-	use_before: bool,
 	before: std::collections::VecDeque<String>
 }
 
 impl BuffingPrinter {
 	pub fn new() -> BuffingPrinter {
-		BuffingPrinter{ use_before: false, before: std::collections::VecDeque::new() }
+		BuffingPrinter{ before: std::collections::VecDeque::new() }
 	}
-	pub fn push(&mut self, line: String, matched: bool, prefix: &str) {
-		if matched {
-			if !self.before.is_empty() {
-				self.before.drain(0..).for_each(|line| {
-					print_line(prefix, &line);
-				});
-			} else {
-				self.use_before = true
-			}
-			print_line(prefix, &line);
-		} else if self.use_before {
-			self.before.push_back(line);
-		}
+	pub fn print_all(&mut self, line: String, prefix: &str) {
+		self.before.drain(0..).for_each(|buffed_line| {
+			print_line(prefix, &buffed_line);
+		});
+		print_line(prefix, &line);
+	}
+	pub fn push(&mut self, line: String) {
+		self.before.push_back(line);
 	}
 }
