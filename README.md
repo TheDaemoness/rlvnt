@@ -26,4 +26,5 @@ The following flags match the behavior found in GNU grep:
 * `-F`/`--fixed-strings`
 * `-i`/`--ignore-case`
 * `-v`/`--invert-match`
+* `-x`/`--line-regexp`
 
