@@ -5,30 +5,26 @@ mod matcher;
 mod output;
 
 fn main() {
-	let (matchers, linesources) = {
-		use clap::Clap;
-		let mut opts = args::Args::parse();
-		let mut linesources = Vec::<input::LineSource>::new();
-		linesources.reserve(opts.files.len());
-		if input::extend_with_linesources(opts.files.drain(0..), &mut linesources) {
-			std::process::exit(1);
-		}
+	use clap::Clap;
+	let mut opts = args::Args::parse();
+	//TODO: We have two unwraps in here. Improve stuff.
+	let matchers = {
 		let patterns = std::iter::once(&opts.pattern);
-		(
-			if opts.fixed_strings {
-				matcher::Matchers::from_exact(patterns, &opts.match_opts)
-			} else {
-				matcher::Matchers::from_regexes(patterns, &opts.match_opts)
-			}.unwrap(),
-			linesources,
-		)
+		if opts.fixed_strings {
+			matcher::Matchers::from_exact(patterns, &opts.match_opts)
+		} else {
+			matcher::Matchers::from_regexes(patterns, &opts.match_opts)
+		}.unwrap()
 	};
-	if linesources.len() > 1 {
+	let linesources = opts.build_linesources().unwrap();
+	let has_multiple = linesources.len() > 1;
+	let should_prefix = opts.should_prefix_lines().unwrap_or(has_multiple);
+	if has_multiple {
 		for linesrc in linesources {
-			process_lines(&matchers, &linesrc, true)
+			process_lines(&matchers, &linesrc, should_prefix)
 		}
 	} else {
-		process_lines(&matchers, linesources.first().expect("linesources is somehow empty"), false)
+		process_lines(&matchers, linesources.first().expect("linesources is somehow empty"), should_prefix)
 	}
 }
 

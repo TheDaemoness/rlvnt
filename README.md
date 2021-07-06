@@ -27,4 +27,6 @@ The following flags match the behavior found in GNU grep:
 * `-i`/`--ignore-case`
 * `-v`/`--invert-match`
 * `-x`/`--line-regexp`
+* `-H`/`--with-filename`
+* `-h`/`--no-filename`
 
