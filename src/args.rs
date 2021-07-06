@@ -1,4 +1,5 @@
 use clap::Clap;
+use crate::errorlist::ErrorList;
 
 #[derive(Clap)]
 #[clap(author, about, version)]
@@ -28,11 +29,12 @@ pub struct MatcherOptions {
 }
 
 impl Args {
-	pub fn build_linesources(&mut self) -> Result<Vec<crate::input::LineSource>,std::io::Error> {
+	pub fn build_linesources(&mut self) -> Result<Vec<crate::input::LineSource>,ErrorList> {
 		use crate::input::LineSource;
 		if self.files.is_empty() {
 			return Ok(vec![LineSource::from_stdin()])
 		}
+		let mut errors = ErrorList::new();
 		let mut linesources = Vec::<LineSource>::with_capacity(self.files.len());
 		let mut got_stdin = false;
 		for name in self.files.drain(0..) {
@@ -43,10 +45,10 @@ impl Args {
 				}
 			} else { match LineSource::from_filename(name) {
 				Ok(ls) => linesources.push(ls),
-				Err(e) => return Err(e)
+				Err((name, e)) => errors.push_about(&name, e)
 			}}
 		}
-		Ok(linesources)
+		errors.or(linesources)
 	}
 
 	pub fn should_prefix_lines(&self) -> Option<bool> {

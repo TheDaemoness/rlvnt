@@ -1,4 +1,5 @@
 mod args;
+mod errorlist;
 mod counter;
 mod input;
 mod matcher;
@@ -10,13 +11,13 @@ fn main() {
 	//TODO: We have two unwraps in here. Improve stuff.
 	let matchers = {
 		let patterns = std::iter::once(&opts.pattern);
-		if opts.fixed_strings {
+		errorlist::exit_if_err(if opts.fixed_strings {
 			matcher::Matchers::from_exact(patterns, &opts.match_opts)
 		} else {
 			matcher::Matchers::from_regexes(patterns, &opts.match_opts)
-		}.unwrap()
+		})
 	};
-	let linesources = opts.build_linesources().unwrap();
+	let linesources = errorlist::exit_if_err(opts.build_linesources());
 	let has_multiple = linesources.len() > 1;
 	let should_prefix = opts.should_prefix_lines().unwrap_or(has_multiple);
 	if has_multiple {

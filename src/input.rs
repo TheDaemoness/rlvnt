@@ -13,9 +13,12 @@ impl LineSource {
 		LineSource::Stdin(std::io::stdin())
 	}
 
-	pub fn from_filename(filename: String) -> Result<LineSource,std::io::Error> {
+	pub fn from_filename(filename: String) -> Result<LineSource,(String,std::io::Error)> {
 		//^ We do actually want to take a filename here.
-		let file = File::open(&filename)?;
+		let file = match File::open(&filename) {
+			Ok(f) => f,
+			Err(e) => return Err((filename, e))
+		};
 		Ok(LineSource::File(filename, file))
 	}
 
