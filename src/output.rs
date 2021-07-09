@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// This file is part of rlvnt. https://github.com/TheDaemoness/rlvnt
+
 use std::io::Write;
 
 //TODO: This file will be removed soon.

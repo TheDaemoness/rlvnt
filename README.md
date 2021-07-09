@@ -30,3 +30,7 @@ The following flags match the behavior found in GNU grep:
 * `-H`/`--with-filename`
 * `-h`/`--no-filename`
 
+## License
+
+`rlvnt` is licened under the GPL v3 or any later version.
+A copy can be found [here](https://www.gnu.org/licenses/gpl-3.0.txt).
