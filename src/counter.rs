@@ -1,21 +1,29 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // This file is part of rlvnt. https://github.com/TheDaemoness/rlvnt
 
-use super::matcher::MatchType as Mt;
+use crate::args::CounterOptions;
+use crate::matcher::MatchType as Mt;
 
 pub enum CounterAction {
+	/// Discard the line.
 	Ignore,
+	/// Push the line onto the end of the buffer.
 	Buffer,
+	/// Pop a line from the buffer, then push a new one.
+	Cycle,
+	/// Print all lines from the buffer.
 	PrintAll,
 }
 
 pub struct Counter {
+	opts: crate::args::CounterOptions,
 	in_block: bool
 }
 
 impl Counter {
-	pub fn new() -> Counter {
+	pub fn new(args: CounterOptions) -> Counter {
 		Counter {
+			opts: args,
 			in_block: false
 		}
 	}
@@ -29,7 +37,11 @@ impl Counter {
 				CounterAction::PrintAll
 			},
 			Mt::NoMatch => {
-				if self.in_block {CounterAction::Buffer} else {CounterAction::Ignore}
+				if self.in_block {
+					CounterAction::Buffer
+				} else {
+					CounterAction::Ignore
+				}
 			}
 		}
 	}

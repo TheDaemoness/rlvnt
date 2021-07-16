@@ -13,14 +13,15 @@ impl Printer {
 	}
 
 	pub fn closure<'a>(&'a mut self) -> Closure<'a> {
+		let mut lock = self.0.lock();
 		Box::new(move |line| {
-			write_line(&mut self.0.lock(), line)
+			write_line(&mut lock, line)
 		})
 	}
 
 	pub fn closure_with_prefix<'a>(&'a mut self, prefix: &'a str) -> Closure<'a> {
+		let mut lock = self.0.lock();
 		Box::new(move |line| {
-			let mut lock = self.0.lock();
 			write(&mut lock, prefix);
 			write(&mut lock, ":");
 			write_line(&mut lock, line);

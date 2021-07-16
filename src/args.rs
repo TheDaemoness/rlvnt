@@ -8,6 +8,8 @@ use crate::errorlist::ErrorList;
 #[clap(author, about, version)]
 pub struct Args {
 	#[clap(flatten)]
+	pub counter_opts: CounterOptions,
+	#[clap(flatten)]
 	pub match_opts: MatcherOptions,
 	#[clap(long, short='F')]
 	pub fixed_strings: bool,
@@ -29,6 +31,11 @@ pub struct MatcherOptions {
 	pub invert_match: bool,
 	#[clap(long, short='x')]
 	pub line_regexp: bool
+}
+
+#[derive(Clap, Clone)]
+pub struct CounterOptions {
+	//TODO: Context args.
 }
 
 impl Args {

@@ -33,11 +33,3 @@ impl ErrorList {
 		std::process::exit(1)
 	}
 }
-
-pub fn exit_if_err<T>(result: Result<T,ErrorList>) -> T {
-	match result {
-		Ok(t)  => t,
-		Err(e) => e.print_all_and_exit()
-	}
-}
-
