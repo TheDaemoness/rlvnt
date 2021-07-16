@@ -35,32 +35,13 @@ pub struct MatcherOptions {
 
 #[derive(Clap, Clone)]
 pub struct CounterOptions {
-	//TODO: Context args.
+	//#[clap(long, short='A', default = 0)]
+	//pub after_context: usize,
+	//#[clap(long, short='B', default = 0)]
+	//pub before_context: usize,
 }
 
 impl Args {
-	pub fn build_linesources(&mut self) -> Result<Vec<crate::input::LineSource>,ErrorList> {
-		use crate::input::LineSource;
-		if self.files.is_empty() {
-			return Ok(vec![LineSource::from_stdin()])
-		}
-		let mut errors = ErrorList::new();
-		let mut linesources = Vec::<LineSource>::with_capacity(self.files.len());
-		let mut got_stdin = false;
-		for name in self.files.drain(0..) {
-			if name == "-" {
-				if !got_stdin {
-					got_stdin = true;
-					linesources.push(LineSource::from_stdin())
-				}
-			} else { match LineSource::from_filename(name) {
-				Ok(ls) => linesources.push(ls),
-				Err((name, e)) => errors.push_about(&name, e)
-			}}
-		}
-		errors.or(linesources)
-	}
-
 	pub fn should_prefix_lines(&self) -> Option<bool> {
 		if !self.with_filename && !self.no_filename {
 			None

@@ -13,11 +13,11 @@ mod printer;
 fn main() {
 	use clap::Clap;
 	let mut opts = args::Args::parse();
-	let linesources = exit_if_err(opts.build_linesources());
-	let has_multiple = linesources.len() > 1;
+	let mut linesources = exit_if_err(input::LineSources::new(std::mem::take(&mut opts.files)));
+	let has_multiple = linesources.has_multiple();
 	let should_prefix = opts.should_prefix_lines().unwrap_or(has_multiple);
 	let mut engine = exit_if_err(engine::Engine::new(opts));
-	for linesrc in linesources {
+	for linesrc in linesources.drain_all() {
 		engine.process(linesrc, should_prefix)
 	}
 }
