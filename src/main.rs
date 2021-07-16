@@ -2,11 +2,12 @@
 // This file is part of rlvnt. https://github.com/TheDaemoness/rlvnt
 
 mod args;
+mod buffer;
 mod errorlist;
 mod counter;
 mod input;
 mod matcher;
-mod output;
+mod printer;
 
 fn main() {
 	use clap::Clap;
@@ -23,27 +24,36 @@ fn main() {
 	let linesources = errorlist::exit_if_err(opts.build_linesources());
 	let has_multiple = linesources.len() > 1;
 	let should_prefix = opts.should_prefix_lines().unwrap_or(has_multiple);
+	let mut printer = printer::Printer::new();
 	if has_multiple {
 		for linesrc in linesources {
-			process_lines(&matchers, &linesrc, should_prefix)
+			process_lines(&matchers, &linesrc, &mut printer, should_prefix)
 		}
 	} else {
-		process_lines(&matchers, linesources.first().expect("linesources is somehow empty"), should_prefix)
+		process_lines(&matchers, linesources.first().expect("linesources is somehow empty"), &mut printer, should_prefix)
 	}
 }
 
 // This is temporary.
-fn process_lines(matchers: &matcher::Matchers, linesrc: &input::LineSource, print_prefix: bool) {
-	let mut printer = output::BuffingPrinter::new();
-	let prefix = if print_prefix {linesrc.name()} else {""};
+fn process_lines(matchers: &matcher::Matchers, linesrc: &input::LineSource, printer: &mut printer::Printer, print_prefix: bool) {
+	let mut closure = if print_prefix {
+		printer.closure_with_prefix(linesrc.name())
+	} else {
+		printer.closure()
+	};
 	let mut counter = counter::Counter::new();
+	let mut buffer = buffer::Lines::new();
 	linesrc.for_lines(|line| {
 		use counter::CounterAction as Ca;
+		use buffer::Buffer;
 		let in_block = counter.is_in_block();
 		match counter.action_for_line(&matchers.match_on(&line, in_block)) {
 			Ca::Ignore   => (),
-			Ca::Buffer   => printer.push(line),
-			Ca::PrintAll => printer.print_all(line, prefix)
+			Ca::Buffer   => buffer.push(line),
+			Ca::PrintAll => {
+				buffer.for_all(&mut closure);
+				closure(line.as_str())
+			}
 		};
 	});
 }
