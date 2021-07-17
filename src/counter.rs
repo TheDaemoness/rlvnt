@@ -15,34 +15,63 @@ pub enum CounterAction {
 	PrintAll,
 }
 
+enum CounterState {
+	Inside,
+	OutsideDropping,
+	OutsideBuffering(usize),
+	OutsideCycling,
+}
+
 pub struct Counter {
 	opts: crate::args::CounterOptions,
-	in_block: bool
+	state: CounterState
 }
 
 impl Counter {
 	pub fn new(args: CounterOptions) -> Counter {
+		use CounterState::*;
+		let default_state = if args.before_context > 0 {
+			OutsideBuffering(0)
+		} else {
+			OutsideDropping
+		};
 		Counter {
 			opts: args,
-			in_block: false
+			state: default_state
 		}
 	}
 	pub fn is_in_block(&self) -> bool {
-		self.in_block
+		matches!(self.state, CounterState::Inside)
 	}
 	pub fn action_for_line(&mut self, mt: &Mt) -> CounterAction {
+		use CounterState as Cs;
+		use CounterAction as Ca;
 		match mt {
 			Mt::Start => {
-				self.in_block = true;
-				CounterAction::PrintAll
+				self.state = Cs::Inside;
+				Ca::PrintAll
 			},
-			Mt::NoMatch => {
-				if self.in_block {
-					CounterAction::Buffer
-				} else {
-					CounterAction::Ignore
+			Mt::NoMatch => match self.state {
+				Cs::Inside => Ca::Buffer,
+				Cs::OutsideDropping => Ca::Ignore,
+				Cs::OutsideBuffering(count) => {
+					if count == self.opts.before_context {
+						self.state = Cs::OutsideCycling;
+						Ca::Cycle
+					} else {
+						self.state = Cs::OutsideBuffering(count+1);
+						Ca::Buffer
+					}
 				}
+				Cs::OutsideCycling => Ca::Cycle
 			}
+		}
+	}
+	pub fn lines_after(&self) -> usize {
+		if self.is_in_block() {
+			self.opts.after_context
+		} else {
+			0
 		}
 	}
 }

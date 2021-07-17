@@ -27,6 +27,7 @@ impl Engine {
 	}
 
 	pub fn process(&mut self, linesrc: input::LineSource, print_prefix: bool) {
+		use buffer::Buffer;
 		let mut closure = if print_prefix {
 			self.printer.closure_with_prefix(linesrc.name())
 		} else {
@@ -37,7 +38,6 @@ impl Engine {
 		let matchers = &self.matchers;
 		linesrc.for_lines(|line| {
 			use counter::CounterAction as Ca;
-			use buffer::Buffer;
 			let in_block = counter.is_in_block();
 			match counter.action_for_line(&matchers.match_on(&line, in_block)) {
 				Ca::Ignore   => (),
@@ -52,5 +52,6 @@ impl Engine {
 				}
 			};
 		});
+		buffer.for_n(counter.lines_after(), &mut closure);
 	}
 }

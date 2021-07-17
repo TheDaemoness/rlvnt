@@ -29,6 +29,8 @@ The following flags match the behavior found in GNU grep:
 * `-x`/`--line-regexp`
 * `-H`/`--with-filename`
 * `-h`/`--no-filename`
+* `-A`/`--after-context`
+* `-B`/`--before-context`
 
 ## License
 

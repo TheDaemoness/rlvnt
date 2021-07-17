@@ -2,10 +2,14 @@
 // This file is part of rlvnt. https://github.com/TheDaemoness/rlvnt
 
 use clap::Clap;
-use crate::errorlist::ErrorList;
+use clap::AppSettings as As;
 
 #[derive(Clap)]
-#[clap(author, about, version)]
+#[clap(
+	author, about, version,
+	setting = As::UnifiedHelpMessage,
+	override_usage = "rlvnt [OPTIONS] <pattern> [files]..."
+)]
 pub struct Args {
 	#[clap(flatten)]
 	pub counter_opts: CounterOptions,
@@ -35,10 +39,10 @@ pub struct MatcherOptions {
 
 #[derive(Clap, Clone)]
 pub struct CounterOptions {
-	//#[clap(long, short='A', default = 0)]
-	//pub after_context: usize,
-	//#[clap(long, short='B', default = 0)]
-	//pub before_context: usize,
+	#[clap(long, short='A', default_value = "0", hide_default_value = true)]
+	pub after_context: usize,
+	#[clap(long, short='B', default_value = "0", hide_default_value = true)]
+	pub before_context: usize,
 }
 
 impl Args {

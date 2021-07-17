@@ -9,7 +9,7 @@ impl Lines {
 	pub fn new() -> Lines {Lines(VecDeque::new())}
 
 	fn drain_max(&mut self, count: usize) -> vec_deque::Drain<String> {
-		let end = self.0.len().max(count);
+		let end = self.0.len().min(count);
 		self.0.drain(..end)
 	}
 }
