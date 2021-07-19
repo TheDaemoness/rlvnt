@@ -18,21 +18,20 @@ where some condition is met.
 Documentation on its regex syntax can be found
 [here](https://docs.rs/regex/1.5.*/regex/index.html#syntax).
 
-## Supported Flags
+## Supported Options
 
-The following flags match the behavior found in GNU grep:
+The following flags/options match the behavior found in GNU grep:
 
-* `--help`/`--version`
+* `-A`/`--after-context`
+* `-B`/`--before-context`
 * `-F`/`--fixed-strings`
+* `-H`/`--with-filename`
+* `-h`/`--no-filename`
 * `-i`/`--ignore-case`
 * `-v`/`--invert-match`
 * `-x`/`--line-regexp`
-* `-H`/`--with-filename`
-* `-h`/`--no-filename`
-* `-A`/`--after-context`
-* `-B`/`--before-context`
 
 ## License
 
-`rlvnt` is licened under the GPL v3 or any later version.
+**rlvnt** is licened under the GPL v3 or any later version.
 A copy can be found [here](https://www.gnu.org/licenses/gpl-3.0.txt).
