@@ -20,10 +20,13 @@ Documentation on its regex syntax can be found
 
 ## Supported Options
 
+**rlvnt** tries to mimic **grep** usage patterns where possible.
 The following flags/options match the behavior found in GNU grep:
 
+* `-` representing standard input in the file list.
 * `-A`/`--after-context`
 * `-B`/`--before-context`
+* `-e`/`--regexp`
 * `-F`/`--fixed-strings`
 * `-H`/`--with-filename`
 * `-h`/`--no-filename`

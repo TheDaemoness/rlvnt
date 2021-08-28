@@ -13,8 +13,8 @@ mod util;
 
 fn main() {
 	use clap::Clap;
-	let mut opts = exit_if_err(args::Args::try_parse().map_err(args::into_errorlist_or_exit));
-	let mut linesources = exit_if_err(input::LineSources::new(std::mem::take(&mut opts.files)));
+	let opts = exit_if_err(args::Args::try_parse().map_err(args::into_errorlist_or_exit));
+	let mut linesources = exit_if_err(input::LineSources::new(opts.filenames().to_vec()));
 	let has_multiple = linesources.has_multiple();
 	let should_prefix = opts.should_prefix_lines().unwrap_or(has_multiple);
 	let mut engine = exit_if_err(engine::Engine::new(opts));

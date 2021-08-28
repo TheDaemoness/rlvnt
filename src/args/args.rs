@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // This file is part of rlvnt. https://github.com/TheDaemoness/rlvnt
 
-use clap::Clap;
+use clap::{Clap, ArgGroup};
 use clap::AppSettings as As;
+
+const USAGE: &str = "rlvnt [OPTIONS...] <PATTERN> [FILES...]
+    rlvnt [OPTIONS...] -e <PATTERN>... [FILES...]";
 
 #[derive(Clap)]
 #[clap(
@@ -10,7 +13,7 @@ use clap::AppSettings as As;
 	setting = As::UnifiedHelpMessage,
 	setting = As::ColoredHelp,
 	setting = As::NextLineHelp,
-	override_usage = "rlvnt [OPTIONS] <pattern> [files]..."
+	override_usage = USAGE
 )]
 pub struct Args {
 	#[clap(flatten)]
@@ -26,20 +29,24 @@ pub struct Args {
 	/// Suppress inclusion of the filename as a prefix on matching lines.
 	#[clap(long, short='h', overrides_with="with-filename")]
 	pub no_filename: bool,
-	/// The pattern to match.
-	#[clap(required = true)]
-	pub pattern: String,
-	/// The list of files to examine. Use `-` for standard input.
-	#[clap()]
-	pub files: Vec<String>
+	/// Add a pattern to match. If used multiple times, match any of the specified patterns.
+	#[clap(
+		long="regexp", short='e', value_name="PATTERN",
+		multiple_values=false, multiple_occurrences=true
+	)]
+	patterns: Vec<String>,
+	#[clap(hidden=true)]
+	positional: Vec<String>
 }
 
 #[derive(Clap)]
 pub struct MatcherOptions {
-	/// Ignore case when matching. Equivalent to lowercasing the text and the pattern before matching.
+	/// Ignore case when matching.
+	/// Equivalent to lowercasing the text and the pattern before matching.
 	#[clap(long, short='i')]
 	pub ignore_case: bool,
-	/// Consider lines that do NOT match as matching, and likes that do match as NOT matching.
+	/// Invert matching.
+	/// Treat lines that match as if they do not match, and lines that don't match as if they match.
 	#[clap(long, short='v')]
 	pub invert_match: bool,
 	/// Require patterns to match entire lines to be considered matches.
@@ -58,6 +65,30 @@ pub struct CounterOptions {
 }
 
 impl Args {
+	fn has_positional_pattern(&self) -> bool {
+		self.patterns.is_empty()
+	}
+
+	pub fn patterns<'a>(&'a self) -> &'a [String] {
+		if self.has_positional_pattern() {
+			self.positional.first().map_or_else(
+				crate::util::empty_slice,
+				std::slice::from_ref
+			)
+		} else {
+			self.patterns.as_slice()
+		}
+	}
+
+	pub fn filenames(&self) -> &[String] {
+		if self.positional.is_empty() {
+			crate::util::empty_slice()
+		} else {
+			let idx: usize = if self.has_positional_pattern() {1} else {0};
+			self.positional.as_slice().split_at(idx).1
+		}
+	}
+
 	pub fn should_prefix_lines(&self) -> Option<bool> {
 		if !self.with_filename && !self.no_filename {
 			None

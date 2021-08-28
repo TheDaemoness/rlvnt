@@ -12,11 +12,15 @@ pub struct Engine {
 impl Engine {
 	pub fn new(opts: crate::args::Args) -> Result<Engine, errorlist::ErrorList> {
 		let m = {
-			let patterns = std::iter::once(&opts.pattern);
+			let patterns = opts.patterns();
+			if patterns.is_empty() {
+				return Err(errorlist::ErrorList::wrap("no patterns specified"))
+			}
+			let patterns_it = patterns.into_iter();
 			if opts.fixed_strings {
-				matcher::Matchers::from_exact(patterns, &opts.match_opts)
+				matcher::Matchers::from_exact(patterns_it, &opts.match_opts)
 			} else {
-				matcher::Matchers::from_regexes(patterns, &opts.match_opts)
+				matcher::Matchers::from_regexes(patterns_it, &opts.match_opts)
 			}?
 		};
 		Ok(Engine{

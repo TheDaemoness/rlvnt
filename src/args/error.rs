@@ -16,7 +16,7 @@ fn message(error: clap::Error) -> Result<String, clap::Error> {
 		Ek::WrongNumberOfValues     => Ok(format!("wrong value count for `{}`", info[0])),
 		Ek::ArgumentConflict        => Ok(format!("conflicting arguments: {:?}", info)),
 		Ek::NoEquals                => Ok(format!("missing equals for `{}`", info[0])),
-		Ek::MissingRequiredArgument => Ok(format!("missing argument `{}`", info[0])),
+		Ek::MissingRequiredArgument => Ok(format!("missing arguments: {:?}", info)),
 		Ek::MissingSubcommand       => Ok(format!("missing subcommand")),
 		Ek::UnexpectedMultipleUsage => Ok(format!("invalid multiple usage")),
 		Ek::ArgumentNotFound        => Ok(format!("missing argument `{}`", info[0])),
