@@ -9,6 +9,7 @@ mod counter;
 mod input;
 mod matcher;
 mod printer;
+mod util;
 
 fn main() {
 	use clap::Clap;
