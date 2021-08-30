@@ -14,7 +14,7 @@ mod util;
 fn main() {
 	use clap::Clap;
 	let opts = exit_if_err(args::Args::try_parse().map_err(args::into_errorlist_or_exit));
-	let mut linesources = exit_if_err(input::LineSources::new(opts.filenames().to_vec()));
+	let mut linesources = exit_if_err(input::LineSources::new(opts.filenames()));
 	let has_multiple = linesources.has_multiple();
 	let should_prefix = opts.should_prefix_lines().unwrap_or(has_multiple);
 	let mut engine = exit_if_err(engine::Engine::new(opts));
@@ -26,6 +26,9 @@ fn main() {
 fn exit_if_err<T>(result: Result<T,errorlist::ErrorList>) -> T {
 	match result {
 		Ok(t)  => t,
-		Err(e) => e.print_all_and_exit()
+		Err(e) => {
+			e.print_all();
+			std::process::exit(1)
+		}
 	}
 }

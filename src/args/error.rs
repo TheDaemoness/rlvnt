@@ -4,6 +4,7 @@
 fn message(error: clap::Error) -> Result<String, clap::Error> {
 	use clap::ErrorKind as Ek;
 	let info = &error.info;
+	#[allow(clippy::useless_format)]
 	match error.kind {
 		Ek::InvalidValue            => Ok(format!("invalid value for `{}`: {}", info[0], info[1])),
 		Ek::UnknownArgument         => Ok(format!("unknown argument `{}`", info[0])),

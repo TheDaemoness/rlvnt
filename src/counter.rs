@@ -40,9 +40,19 @@ impl Counter {
 			state: default_state
 		}
 	}
+
 	pub fn is_in_block(&self) -> bool {
 		matches!(self.state, CounterState::Inside)
 	}
+
+	pub fn lines_after(&self) -> usize {
+		if self.is_in_block() {
+			self.opts.after_context
+		} else {
+			0
+		}
+	}
+
 	pub fn action_for_line(&mut self, mt: &Mt) -> CounterAction {
 		use CounterState as Cs;
 		use CounterAction as Ca;
@@ -65,13 +75,6 @@ impl Counter {
 				}
 				Cs::OutsideCycling => Ca::Cycle
 			}
-		}
-	}
-	pub fn lines_after(&self) -> usize {
-		if self.is_in_block() {
-			self.opts.after_context
-		} else {
-			0
 		}
 	}
 }

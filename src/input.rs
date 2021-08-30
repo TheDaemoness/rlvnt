@@ -37,7 +37,7 @@ impl LineSource {
 	}
 
 	pub fn for_lines<F>(&self, cb: F)
-	where F: FnMut(String) -> () {
+	where F: FnMut(String) {
 		match self {
 			LineSource::Stdin(stdin) =>
 				stdin.lock().lines().filter_map(|x| { x.ok() }).for_each(cb),
@@ -47,24 +47,31 @@ impl LineSource {
 	}
 }
 
+//NOTE: Performance microoptimization is possible here,
+//but isn't worth the code quality degradation.
+
 impl LineSources {
-	pub fn new(mut names: Vec<String>) -> Result<LineSources, ErrorList> {
-		if names.is_empty() {
-			return Ok(LineSources(vec![LineSource::from_stdin()]))
-		}
+	pub fn new<IIt, AsStr>(names: IIt) -> Result<LineSources, ErrorList>
+	where IIt: IntoIterator<Item = AsStr>, AsStr: AsRef<str> {
+		let it = names.into_iter();
+		let size = it.size_hint().1.unwrap_or(1);
+		let mut linesources = Vec::<LineSource>::with_capacity(size);
 		let mut errors = ErrorList::new();
-		let mut linesources = Vec::<LineSource>::with_capacity(names.len());
 		let mut got_stdin = false;
-		for name in names.drain(..) {
+		for name_raw in it {
+			let name: &str = name_raw.as_ref();
 			if name == "-" {
 				if !got_stdin {
 					got_stdin = true;
 					linesources.push(LineSource::from_stdin())
 				}
-			} else { match LineSource::from_filename(name) {
-				Ok(ls) => linesources.push(ls),
+			} else { match LineSource::from_filename(name.to_owned()) {
+				Ok(ls)         => linesources.push(ls),
 				Err((name, e)) => errors.push_about(&name, e)
 			}}
+		}
+		if linesources.is_empty() {
+			linesources.push(LineSource::from_stdin())
 		}
 		errors.or(LineSources(linesources))
 	}
@@ -73,7 +80,7 @@ impl LineSources {
 		self.0.len() > 1
 	}
 
-	pub fn drain_all<'a>(&'a mut self) -> impl Iterator<Item = LineSource> + 'a {
+	pub fn drain_all(&mut self) -> impl Iterator<Item = LineSource> + '_ {
 		self.0.drain(..)
 	}
 }

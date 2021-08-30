@@ -27,9 +27,4 @@ impl ErrorList {
 			eprintln!("error: {}", e);
 		}
 	}
-
-	pub fn print_all_and_exit(self) -> ! {
-		self.print_all();
-		std::process::exit(1)
-	}
 }

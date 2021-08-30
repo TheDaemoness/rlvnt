@@ -12,7 +12,7 @@ impl Printer {
 		Printer(std::io::stdout())
 	}
 
-	pub fn closure<'a>(&'a mut self) -> Closure<'a> {
+	pub fn closure(&mut self) -> Closure<'_> {
 		let mut lock = self.0.lock();
 		Box::new(move |line| {
 			write_line(&mut lock, line)

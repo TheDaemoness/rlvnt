@@ -11,12 +11,12 @@ pub struct Engine {
 
 impl Engine {
 	pub fn new(opts: crate::args::Args) -> Result<Engine, errorlist::ErrorList> {
-		let m = {
+		let matchers = {
 			let patterns = opts.patterns();
 			if patterns.is_empty() {
 				return Err(errorlist::ErrorList::wrap("no patterns specified"))
 			}
-			let patterns_it = patterns.into_iter();
+			let patterns_it = patterns.iter();
 			if opts.fixed_strings {
 				matcher::Matchers::from_exact(patterns_it, &opts.match_opts)
 			} else {
@@ -24,7 +24,7 @@ impl Engine {
 			}?
 		};
 		Ok(Engine{
-			matchers: m,
+			matchers,
 			counter_opts: opts.counter_opts,
 			printer: printer::Printer::new()
 		})
@@ -32,7 +32,7 @@ impl Engine {
 
 	pub fn process(&mut self, linesrc: input::LineSource, print_prefix: bool) {
 		use buffer::Buffer;
-		let mut closure = if print_prefix {
+		let mut print = if print_prefix {
 			self.printer.closure_with_prefix(linesrc.name())
 		} else {
 			self.printer.closure()
@@ -42,8 +42,8 @@ impl Engine {
 		let matchers = &self.matchers;
 		linesrc.for_lines(|line| {
 			use counter::CounterAction as Ca;
-			let in_block = counter.is_in_block();
-			match counter.action_for_line(&matchers.match_on(&line, in_block)) {
+			let is_in_bl = counter.is_in_block();
+			match counter.action_for_line(&matchers.match_on(&line, is_in_bl)) {
 				Ca::Ignore   => (),
 				Ca::Buffer   => buffer.push(line),
 				Ca::Cycle    => {
@@ -51,11 +51,11 @@ impl Engine {
 					buffer.push(line);
 				}
 				Ca::PrintAll => {
-					buffer.for_all(&mut closure);
-					closure(line.as_str())
+					buffer.for_all(&mut print);
+					print(line.as_str())
 				}
 			};
 		});
-		buffer.for_n(counter.lines_after(), &mut closure);
+		buffer.for_n(counter.lines_after(), &mut print);
 	}
 }

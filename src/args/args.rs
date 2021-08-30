@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // This file is part of rlvnt. https://github.com/TheDaemoness/rlvnt
 
-use clap::{Clap, ArgGroup};
+use clap::Clap;
 use clap::AppSettings as As;
 
 const USAGE: &str = "rlvnt [OPTIONS...] <PATTERN> [FILES...]
@@ -69,7 +69,7 @@ impl Args {
 		self.patterns.is_empty()
 	}
 
-	pub fn patterns<'a>(&'a self) -> &'a [String] {
+	pub fn patterns(&self) -> &[String] {
 		if self.has_positional_pattern() {
 			self.positional.first().map_or_else(
 				crate::util::empty_slice,
