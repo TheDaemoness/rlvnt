@@ -17,4 +17,4 @@ jobs:
     - name: Build
       run: cargo build --message-format short
     - name: Test
-      run: cargo test --message-format short
+      run: cargo test -q
