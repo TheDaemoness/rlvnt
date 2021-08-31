@@ -12,8 +12,7 @@ mod printer;
 mod util;
 
 fn main() {
-	use clap::Clap;
-	let opts = exit_if_err(args::Args::try_parse().map_err(args::into_errorlist_or_exit));
+	let opts = exit_if_err(args::parse_args(std::env::args_os()));
 	let mut linesources = exit_if_err(input::LineSources::new(opts.filenames()));
 	let has_multiple = linesources.has_multiple();
 	let should_prefix = opts.should_prefix_lines().unwrap_or(has_multiple);
