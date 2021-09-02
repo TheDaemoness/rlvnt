@@ -6,6 +6,7 @@ use crate::args::MatcherOptions;
 use crate::errorlist::ErrorList;
 
 enum MatcherEngine {
+	//TODO: Optimized plain text search?
 	Regexes(RegexSet)
 }
 
@@ -14,12 +15,18 @@ struct Matcher {
 	invert: bool
 }
 
-pub struct Matchers(Matcher);
+enum MatchersInner {
+	StartOnly(Matcher),
+	StartEnd(Matcher, Matcher)
+}
+
+pub struct Matchers(MatchersInner);
 
 #[derive(Clone,Copy,PartialEq,Eq)]
 pub enum MatchType {
 	NoMatch,
 	Start,
+	End,
 }
 
 impl MatcherEngine {
@@ -55,6 +62,25 @@ impl Matcher {
 	}
 }
 
+impl MatchersInner {
+	pub fn match_on(&self, what: &str, is_inside: bool) -> MatchType {
+		use MatchersInner::*;
+		use MatchType as Mt;
+		match self {
+			StartOnly(s)  => if s.is_match(what) {return Mt::Start}
+			StartEnd(s,e) => {
+				let (matcher, result) = if is_inside {
+					(&e, Mt::End)
+				} else {
+					(&s, Mt::Start)
+				};
+				if matcher.is_match(what) {return result}
+			}
+		}
+		Mt::NoMatch
+	}
+}
+
 impl Matchers {
 	pub fn from_exact<S,T>(patterns: T, opts: &MatcherOptions) -> Result<Matchers, ErrorList>
 	where S: AsRef<str>, T: Iterator<Item = S> {
@@ -63,16 +89,15 @@ impl Matchers {
 
 	pub fn from_regexes<S,T>(patterns: T, opts: &MatcherOptions) -> Result<Matchers, ErrorList>
 	where S: AsRef<str>, T: Iterator<Item = S> {
-		let me = MatcherEngine::from_regexes(patterns, opts)?;
-		Ok(Matchers(Matcher{
-			engine: me,
+		let engine = MatcherEngine::from_regexes(patterns, opts)?;
+		Ok(Matchers(MatchersInner::StartOnly(Matcher{
+			engine,
 			invert: opts.invert_match
-		}))
+		})))
 	}
 
-	pub fn match_on(&self, what: &str, _is_inside: bool) -> MatchType {
-		use MatchType as Mt;
-		if self.0.is_match(what) {Mt::Start} else {Mt::NoMatch}
+	pub fn match_on(&self, what: &str, is_inside: bool) -> MatchType {
+		self.0.match_on(what, is_inside)
 	}
 }
 

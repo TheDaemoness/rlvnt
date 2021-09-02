@@ -2,7 +2,7 @@
 // This file is part of rlvnt. https://github.com/TheDaemoness/rlvnt
 
 use crate::args::CounterOptions;
-use crate::matcher::MatchType as Mt;
+use crate::matcher::MatchType;
 
 pub enum CounterAction {
 	/// Discard the line.
@@ -13,6 +13,8 @@ pub enum CounterAction {
 	Cycle,
 	/// Print all lines from the buffer.
 	PrintAll,
+	/// Print this line only.
+	PrintOne,
 }
 
 enum CounterState {
@@ -20,6 +22,7 @@ enum CounterState {
 	OutsideDropping,
 	OutsideBuffering(usize),
 	OutsideCycling,
+	OutsidePrinting(usize),
 }
 
 pub struct Counter {
@@ -28,16 +31,20 @@ pub struct Counter {
 }
 
 impl Counter {
-	pub fn new(args: CounterOptions) -> Counter {
+	pub fn new(opts: CounterOptions) -> Counter {
+		let state = Self::default_outside_state(&opts);
+		Counter {
+			opts,
+			state
+		}
+	}
+
+	fn default_outside_state(args: &CounterOptions) -> CounterState {
 		use CounterState::*;
-		let default_state = if args.before_context > 0 {
+		if args.before_context > 0 {
 			OutsideBuffering(0)
 		} else {
 			OutsideDropping
-		};
-		Counter {
-			opts: args,
-			state: default_state
 		}
 	}
 
@@ -53,9 +60,10 @@ impl Counter {
 		}
 	}
 
-	pub fn action_for_line(&mut self, mt: &Mt) -> CounterAction {
+	pub fn action_for_line(&mut self, mt: &MatchType) -> CounterAction {
 		use CounterState as Cs;
 		use CounterAction as Ca;
+		use MatchType as Mt;
 		match mt {
 			Mt::Start => {
 				self.state = Cs::Inside;
@@ -73,7 +81,24 @@ impl Counter {
 						Ca::Buffer
 					}
 				}
-				Cs::OutsideCycling => Ca::Cycle
+				Cs::OutsideCycling => Ca::Cycle,
+				Cs::OutsidePrinting(count) => {
+					if count == self.opts.after_context {
+						self.state = Self::default_outside_state(&self.opts);
+						self.action_for_line(mt)
+					} else {
+						self.state = Cs::OutsidePrinting(count);
+						Ca::PrintOne
+					}
+				}
+			},
+			Mt::End => {
+				self.state = if self.opts.after_context > 0 {
+					Cs::OutsidePrinting(0)
+				} else {
+					Self::default_outside_state(&self.opts)
+				};
+				Ca::PrintAll
 			}
 		}
 	}

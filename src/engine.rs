@@ -54,6 +54,7 @@ impl Engine {
 					buffer.for_all(&mut print);
 					print(line.as_str())
 				}
+				Ca::PrintOne => print(line.as_str())
 			};
 		});
 		buffer.for_n(counter.lines_after(), &mut print);
