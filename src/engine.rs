@@ -4,7 +4,7 @@
 use crate::*;
 
 pub struct Engine {
-	matchers:     matcher::Matchers,
+	matchers:     matcher::Matcher,
 	counter_opts: args::CounterOptions,
 	printer:      printer::Printer,
 }
@@ -18,9 +18,9 @@ impl Engine {
 			}
 			let patterns_it = patterns.iter();
 			if opts.fixed_strings {
-				matcher::Matchers::from_exact(patterns_it, &opts.match_opts)
+				matcher::Matcher::from_exact(patterns_it, &opts.match_opts)
 			} else {
-				matcher::Matchers::from_regexes(patterns_it, &opts.match_opts)
+				matcher::Matcher::from_regexes(patterns_it, &opts.match_opts)
 			}?
 		};
 		Ok(Engine{

@@ -1,26 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // This file is part of rlvnt. https://github.com/TheDaemoness/rlvnt
 
-use regex::{RegexSet,RegexSetBuilder};
+mod engine;
+
+use engine::Engine;
 use crate::args::MatcherOptions;
 use crate::errorlist::ErrorList;
 
-enum MatcherEngine {
-	//TODO: Optimized plain text search?
-	Regexes(RegexSet)
+enum MatcherInner {
+	StartOnly(Engine),
+	StartEnd(Engine, Engine)
 }
 
-struct Matcher {
-	engine: MatcherEngine,
-	invert: bool
-}
-
-enum MatchersInner {
-	StartOnly(Matcher),
-	StartEnd(Matcher, Matcher)
-}
-
-pub struct Matchers(MatchersInner);
+pub struct Matcher(MatcherInner);
 
 #[derive(Clone,Copy,PartialEq,Eq)]
 pub enum MatchType {
@@ -29,42 +21,9 @@ pub enum MatchType {
 	End,
 }
 
-impl MatcherEngine {
-	pub fn from_regexes<S,T>(patterns: T, opts: &MatcherOptions) -> Result<MatcherEngine, ErrorList>
-	where S: AsRef<str>, T: Iterator<Item = S> {
-		let mut rsb = if !opts.line_regexp {
-			RegexSetBuilder::new(patterns)
-		} else {
-			// https://github.com/rust-lang/regex/issues/675
-			RegexSetBuilder::new(patterns.map(
-				|pattern| format!("\\A(?:{})\\z", pattern.as_ref())
-			))
-		};
-		rsb.case_insensitive(opts.ignore_case);
-		match rsb.build() {
-			Ok(v)  => Ok(MatcherEngine::Regexes(v)),
-			Err(regex::Error::Syntax(e)) => {
-				let mut errs = ErrorList::new();
-				push_regex_error(&mut errs, e);
-				Err(errs)
-			}
-			Err(e) => Err(ErrorList::wrap(e.to_string()))
-		}
-	}
-}
-
-impl Matcher {
-	pub fn is_match(&self, what: &str) -> bool {
-		use MatcherEngine::*;
-		match self.engine {
-			Regexes(ref r)  =>  r.is_match(what) != self.invert,
-		}
-	}
-}
-
-impl MatchersInner {
+impl MatcherInner {
 	pub fn match_on(&self, what: &str, is_inside: bool) -> MatchType {
-		use MatchersInner::*;
+		use MatcherInner::*;
 		use MatchType as Mt;
 		match self {
 			StartOnly(s)  => if s.is_match(what) {return Mt::Start}
@@ -81,19 +40,16 @@ impl MatchersInner {
 	}
 }
 
-impl Matchers {
-	pub fn from_exact<S,T>(patterns: T, opts: &MatcherOptions) -> Result<Matchers, ErrorList>
+impl Matcher {
+	pub fn from_exact<S,T>(patterns: T, opts: &MatcherOptions) -> Result<Matcher, ErrorList>
 	where S: AsRef<str>, T: Iterator<Item = S> {
-		Matchers::from_regexes(patterns.map(|r| regex::escape(r.as_ref())), opts)
+		Matcher::from_regexes(patterns.map(|r| regex::escape(r.as_ref())), opts)
 	}
 
-	pub fn from_regexes<S,T>(patterns: T, opts: &MatcherOptions) -> Result<Matchers, ErrorList>
+	pub fn from_regexes<S,T>(patterns: T, opts: &MatcherOptions) -> Result<Matcher, ErrorList>
 	where S: AsRef<str>, T: Iterator<Item = S> {
-		let engine = MatcherEngine::from_regexes(patterns, opts)?;
-		Ok(Matchers(MatchersInner::StartOnly(Matcher{
-			engine,
-			invert: opts.invert_match
-		})))
+		let engine = Engine::from_regexes(patterns, opts)?;
+		Ok(Matcher(MatcherInner::StartOnly(engine)))
 	}
 
 	pub fn match_on(&self, what: &str, is_inside: bool) -> MatchType {
@@ -101,14 +57,3 @@ impl Matchers {
 	}
 }
 
-pub fn push_regex_error(errs: &mut ErrorList, e: String) {
-	//WARNING: Fragile error message parsing, but all well, blame `regex`.
-	let prefix_to_strip = "error: ";
-	let mut lines = e.lines();
-	let mut next_or_panic = || lines.next().expect("regex error reporting changed");
-	let _       = next_or_panic();
-	let pattern = next_or_panic().trim_start();
-	let _       = next_or_panic();
-	let message = next_or_panic().split_at(prefix_to_strip.len()).1;
-	errs.push_about("(patterns)", format_args!("{} in {}", message, pattern))
-}
