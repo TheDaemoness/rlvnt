@@ -38,7 +38,7 @@ impl Counter {
 	}
 
 	pub fn is_in_block(&self) -> bool {
-		matches!(self.state, State::Inside)
+		self.state.is_inside_block()
 	}
 
 	pub fn lines_after(&self) -> usize {
@@ -50,6 +50,6 @@ impl Counter {
 	}
 
 	pub fn action_for_line(&mut self, mt: &MatchType) -> CounterAction {
-		state::update(&mut self.state, &self.opts, mt)
+		self.state.update(&self.opts, mt)
 	}
 }

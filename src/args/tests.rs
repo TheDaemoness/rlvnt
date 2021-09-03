@@ -19,11 +19,11 @@ fn assert_posargs(args: &Args, a: &[&str], b: &[&str]) {
 	// Skip using assert_eq, we get nicer error messages this way.
 	assert!(
 		args.patterns() == a,
-		"incorrect patterns: expected {:?}, got {:?}", a, args.patterns()
+		"incorrect patterns: expected `{:?}`, got `{:?}`", a, args.patterns()
 	);
 	assert!(
 		args.filenames() == b,
-		"incorrect filenames: expected {:?}, got {:?}", b, args.filenames()
+		"incorrect filenames: expected `{:?}`, got `{:?}`", b, args.filenames()
 	);
 }
 
