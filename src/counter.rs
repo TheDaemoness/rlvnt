@@ -2,11 +2,14 @@
 // This file is part of rlvnt. https://github.com/TheDaemoness/rlvnt
 
 mod state;
+#[cfg(test)]
+mod tests;
 
 use state::State;
 use crate::args::CounterOptions;
 use crate::matcher::MatchType;
 
+#[derive(Clone,Copy,PartialEq,Eq,Debug)]
 pub enum CounterAction {
 	/// Discard the line.
 	Ignore,

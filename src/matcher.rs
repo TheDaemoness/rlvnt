@@ -14,7 +14,7 @@ enum MatcherInner {
 
 pub struct Matcher(MatcherInner);
 
-#[derive(Clone,Copy,PartialEq,Eq)]
+#[derive(Clone,Copy,PartialEq,Eq,Debug)]
 pub enum MatchType {
 	NoMatch,
 	Start,
