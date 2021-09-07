@@ -40,7 +40,7 @@ impl State {
 						*self = default_outside_state(opts);
 						self.update(opts, mt)
 					} else {
-						*self = Cs::OutsidePrinting(*count);
+						*self = Cs::OutsidePrinting(*count+1);
 						Ca::PrintOne
 					}
 				}
