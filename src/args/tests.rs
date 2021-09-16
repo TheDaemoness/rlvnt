@@ -15,11 +15,11 @@ macro_rules! parse {
 	}}
 }
 
-fn assert_posargs(args: &Args, a: &[&str], b: &[&str]) {
+fn assert_posargs(args: &PatternOptions, a: &[&str], b: &[&str]) {
 	// Skip using assert_eq, we get nicer error messages this way.
 	assert!(
-		args.patterns() == a,
-		"incorrect patterns: expected `{:?}`, got `{:?}`", a, args.patterns()
+		args.patterns_start() == a,
+		"incorrect patterns: expected `{:?}`, got `{:?}`", a, args.patterns_start()
 	);
 	assert!(
 		args.filenames() == b,
@@ -32,30 +32,30 @@ fn assert_posargs(args: &Args, a: &[&str], b: &[&str]) {
 
 #[test]
 pub fn test_empty() {
-	let args = parse!().expect("Parsing should not fail on an empty list");
-	assert_posargs(&args, &NADA, &NADA);
+	let args = parse!().expect("Parsing should not fail");
+	assert_posargs(&args.pattern_opts, &NADA, &NADA);
 }
 
 #[test]
 pub fn test_patterns_one() {
 	let args = parse!("foo").expect("Parsing should not fail");
-	assert_posargs(&args, &["foo"], &NADA);
+	assert_posargs(&args.pattern_opts, &["foo"], &NADA);
 }
 
 #[test]
 pub fn test_patterns_many() {
 	let args = parse!("-e", "foo", "-e", "bar").expect("Parsing should not fail");
-	assert_posargs(&args, &["foo", "bar"], &NADA);
+	assert_posargs(&args.pattern_opts, &["foo", "bar"], &NADA);
 }
 
 #[test]
 pub fn test_filenames() {
 	let args = parse!("foo", "bar", "baz").expect("Parsing should not fail");
-	assert_posargs(&args, &["foo"], &["bar", "baz"]);
+	assert_posargs(&args.pattern_opts, &["foo"], &["bar", "baz"]);
 }
 
 #[test]
 pub fn test_e_and_filenames() {
 	let args = parse!("-e", "foo", "bar", "baz").expect("Parsing should not fail");
-	assert_posargs(&args, &["foo"], &["bar", "baz"]);
+	assert_posargs(&args.pattern_opts, &["foo"], &["bar", "baz"]);
 }

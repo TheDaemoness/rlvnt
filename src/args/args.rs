@@ -20,16 +20,31 @@ pub struct Args {
 	pub counter_opts: CounterOptions,
 	#[clap(flatten)]
 	pub match_opts: MatcherOptions,
-	/// Treat patterns as a strings to find instead of regexes.
-	#[clap(long, short='F')]
-	pub fixed_strings: bool,
 	/// Include the filename as a prefix on matching lines.
 	#[clap(long, short='H', overrides_with="no-filename")]
 	pub with_filename: bool,
 	/// Suppress inclusion of the filename as a prefix on matching lines.
 	#[clap(long, short='h', overrides_with="with-filename")]
 	pub no_filename: bool,
-	/// Add a pattern to match. If used multiple times, match any of the specified patterns.
+	#[clap(flatten)]
+	pub pattern_opts: PatternOptions,
+}
+
+/// Contains all pattern options AND the positional option list.
+/// ALSO contains the files-to-search list for technical reasons.
+#[derive(Clap)]
+pub struct PatternOptions {
+	/*
+	/// Add a pattern indicating the end of a block.
+	/// If used multiple times, match any of the specified patterns.
+	#[clap(
+		long="regexp-end", short='E', value_name="PATTERN",
+		multiple_values=false, multiple_occurrences=true
+	)]
+	patterns_end: Vec<String>,
+	*/
+	/// Add a pattern indicating the start of a block.
+	/// If used multiple times, match any of the specified patterns.
 	#[clap(
 		long="regexp", short='e', value_name="PATTERN",
 		multiple_values=false, multiple_occurrences=true
@@ -41,6 +56,9 @@ pub struct Args {
 
 #[derive(Clap)]
 pub struct MatcherOptions {
+	/// Treat patterns as a strings to find instead of regexes.
+	#[clap(long, short='F')]
+	pub fixed_strings: bool,
 	/// Ignore case when matching.
 	/// Equivalent to lowercasing the text and the pattern before matching.
 	#[clap(long, short='i')]
@@ -65,11 +83,25 @@ pub struct CounterOptions {
 }
 
 impl Args {
+	pub fn should_prefix_lines(&self) -> Option<bool> {
+		if !self.with_filename && !self.no_filename {
+			None
+		} else {
+			Some(self.with_filename)
+		}
+	}
+
+	pub fn filenames(&self) -> &[String] {
+		self.pattern_opts.filenames()
+	}
+}
+
+impl PatternOptions {
 	fn has_positional_pattern(&self) -> bool {
 		self.patterns.is_empty()
 	}
 
-	pub fn patterns(&self) -> &[String] {
+	pub fn patterns_start(&self) -> &[String] {
 		if self.has_positional_pattern() {
 			self.positional.first().map_or_else(
 				crate::util::empty_slice,
@@ -80,20 +112,16 @@ impl Args {
 		}
 	}
 
+	//pub fn patterns_end(&self) -> &[String] {
+	//	self.patterns_end.as_slice()
+	//}
+
 	pub fn filenames(&self) -> &[String] {
 		if self.positional.is_empty() {
 			crate::util::empty_slice()
 		} else {
 			let idx: usize = if self.has_positional_pattern() {1} else {0};
 			self.positional.as_slice().split_at(idx).1
-		}
-	}
-
-	pub fn should_prefix_lines(&self) -> Option<bool> {
-		if !self.with_filename && !self.no_filename {
-			None
-		} else {
-			Some(self.with_filename)
 		}
 	}
 }

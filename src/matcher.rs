@@ -41,14 +41,14 @@ impl MatcherInner {
 }
 
 impl Matcher {
-	pub fn from_exact<S,T>(patterns: T, opts: &MatcherOptions) -> Result<Matcher, ErrorList>
-	where S: AsRef<str>, T: Iterator<Item = S> {
-		Matcher::from_regexes(patterns.map(|r| regex::escape(r.as_ref())), opts)
+	pub fn from_exact<IIt,Str>(patterns: IIt, opts: &MatcherOptions) -> Result<Matcher, ErrorList>
+	where IIt: IntoIterator<Item = Str>, Str: AsRef<str> {
+		Matcher::from_regexes(patterns.into_iter().map(|r| regex::escape(r.as_ref())), opts)
 	}
 
-	pub fn from_regexes<S,T>(patterns: T, opts: &MatcherOptions) -> Result<Matcher, ErrorList>
-	where S: AsRef<str>, T: Iterator<Item = S> {
-		let engine = Engine::from_regexes(patterns, opts)?;
+	pub fn from_regexes<IIt,Str>(patterns: IIt, opts: &MatcherOptions) -> Result<Matcher, ErrorList>
+	where IIt: IntoIterator<Item = Str>, Str: AsRef<str> {
+		let engine = Engine::from_regexes(patterns.into_iter(), opts)?;
 		Ok(Matcher(MatcherInner::StartOnly(engine)))
 	}
 
@@ -56,4 +56,3 @@ impl Matcher {
 		self.0.match_on(what, is_inside)
 	}
 }
-
