@@ -8,6 +8,7 @@ mod errorlist;
 mod counter;
 mod input;
 mod matcher;
+mod pattern;
 mod printer;
 mod util;
 
