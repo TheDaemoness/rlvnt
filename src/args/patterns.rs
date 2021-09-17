@@ -9,11 +9,12 @@ pub struct Patterns<'a> {
 }
 
 impl<'a> Patterns<'a> {
-	pub fn new_start(opts: &'a super::Args) -> Patterns<'a> {
-		Patterns {
-			opts: &opts.match_opts,
-			patterns: opts.pattern_opts.patterns_start()
-		}
+	pub fn new(args: &'a super::Args) -> (Patterns<'a>, Patterns<'a>) {
+		let opts = &args.match_opts;
+		(
+			Patterns {opts, patterns: args.pattern_opts.patterns_start()},
+			Patterns {opts, patterns: args.pattern_opts.patterns_end()}
+		)
 	}
 
 	pub fn is_empty(&self) -> bool {

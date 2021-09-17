@@ -12,11 +12,8 @@ pub struct Engine {
 impl Engine {
 	pub fn new(opts: crate::args::Args) -> Result<Engine, errorlist::ErrorList> {
 		let matchers = {
-			let patterns_start = crate::args::Patterns::new_start(&opts);
-			if patterns_start.is_empty() {
-				return Err(errorlist::ErrorList::wrap("no patterns specified"))
-			}
-			matcher::Matcher::new_startonly(patterns_start)?
+			let (patterns_start, patterns_end) = crate::args::Patterns::new(&opts);
+			matcher::Matcher::new(patterns_start, patterns_end)?
 		};
 		Ok(Engine{
 			matchers,

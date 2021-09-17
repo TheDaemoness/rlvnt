@@ -28,12 +28,8 @@ impl MatcherInner {
 		match self {
 			StartOnly(s)  => if s.is_match(what) {return Mt::Start}
 			StartEnd(s,e) => {
-				let (matcher, result) = if is_inside {
-					(&e, Mt::End)
-				} else {
-					(&s, Mt::Start)
-				};
-				if matcher.is_match(what) {return result}
+				if is_inside && e.is_match(what) {return Mt::End}
+				if s.is_match(what) {return Mt::Start}
 			}
 		}
 		Mt::NoMatch
@@ -41,9 +37,18 @@ impl MatcherInner {
 }
 
 impl Matcher {
-	pub fn new_startonly(patterns: Patterns<'_>) -> Result<Matcher, ErrorList> {
-		let engine = Engine::from_patterns(patterns)?;
-		Ok(Matcher(MatcherInner::StartOnly(engine)))
+	pub fn new(start: Patterns<'_>, end: Patterns<'_>) -> Result<Matcher, ErrorList> {
+		if start.is_empty() {
+			return Err(crate::errorlist::ErrorList::wrap("no patterns specified"))
+		}
+		let engine_start = Engine::from_patterns(start)?;
+		let matcher_inner =	if end.is_empty() {
+			MatcherInner::StartOnly(engine_start)
+		} else {
+			let engine_end = Engine::from_patterns(end)?;
+			MatcherInner::StartEnd(engine_start, engine_end)
+		};
+		Ok(Matcher(matcher_inner))
 	}
 
 	pub fn match_on(&self, what: &str, is_inside: bool) -> MatchType {

@@ -34,7 +34,6 @@ pub struct Args {
 /// ALSO contains the files-to-search list for technical reasons.
 #[derive(Clap)]
 pub struct PatternOptions {
-	/*
 	/// Add a pattern indicating the end of a block.
 	/// If used multiple times, match any of the specified patterns.
 	#[clap(
@@ -42,7 +41,6 @@ pub struct PatternOptions {
 		multiple_values=false, multiple_occurrences=true
 	)]
 	patterns_end: Vec<String>,
-	*/
 	/// Add a pattern indicating the start of a block.
 	/// If used multiple times, match any of the specified patterns.
 	#[clap(
@@ -112,9 +110,9 @@ impl PatternOptions {
 		}
 	}
 
-	//pub fn patterns_end(&self) -> &[String] {
-	//	self.patterns_end.as_slice()
-	//}
+	pub fn patterns_end(&self) -> &[String] {
+		self.patterns_end.as_slice()
+	}
 
 	pub fn filenames(&self) -> &[String] {
 		if self.positional.is_empty() {
