@@ -4,7 +4,7 @@
 mod engine;
 
 use engine::Engine;
-use crate::args::MatcherOptions;
+use crate::args::Patterns;
 use crate::errorlist::ErrorList;
 
 enum MatcherInner {
@@ -41,14 +41,8 @@ impl MatcherInner {
 }
 
 impl Matcher {
-	pub fn from_exact<IIt,Str>(patterns: IIt, opts: &MatcherOptions) -> Result<Matcher, ErrorList>
-	where IIt: IntoIterator<Item = Str>, Str: AsRef<str> {
-		Matcher::from_regexes(patterns.into_iter().map(|r| regex::escape(r.as_ref())), opts)
-	}
-
-	pub fn from_regexes<IIt,Str>(patterns: IIt, opts: &MatcherOptions) -> Result<Matcher, ErrorList>
-	where IIt: IntoIterator<Item = Str>, Str: AsRef<str> {
-		let engine = Engine::from_regexes(patterns.into_iter(), opts)?;
+	pub fn new_startonly(patterns: Patterns<'_>) -> Result<Matcher, ErrorList> {
+		let engine = Engine::from_patterns(patterns)?;
 		Ok(Matcher(MatcherInner::StartOnly(engine)))
 	}
 

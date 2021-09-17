@@ -104,7 +104,7 @@ impl PatternOptions {
 	pub fn patterns_start(&self) -> &[String] {
 		if self.has_positional_pattern() {
 			self.positional.first().map_or_else(
-				crate::util::empty_slice,
+				crate::util::slice::empty,
 				std::slice::from_ref
 			)
 		} else {
@@ -118,7 +118,7 @@ impl PatternOptions {
 
 	pub fn filenames(&self) -> &[String] {
 		if self.positional.is_empty() {
-			crate::util::empty_slice()
+			crate::util::slice::empty()
 		} else {
 			let idx: usize = if self.has_positional_pattern() {1} else {0};
 			self.positional.as_slice().split_at(idx).1

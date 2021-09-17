@@ -2,7 +2,7 @@
 // This file is part of rlvnt. https://github.com/TheDaemoness/rlvnt
 
 use regex::{RegexSet,RegexSetBuilder};
-use crate::args::MatcherOptions;
+use crate::args::Patterns;
 use crate::errorlist::ErrorList;
 
 enum EngineInner {
@@ -16,16 +16,11 @@ pub struct Engine {
 }
 
 impl Engine {
-	pub fn from_regexes<S,T>(patterns: T, opts: &MatcherOptions) -> Result<Engine, ErrorList>
-	where S: AsRef<str>, T: Iterator<Item = S> {
-		let mut rsb = if !opts.line_regexp {
-			RegexSetBuilder::new(patterns)
-		} else {
-			// https://github.com/rust-lang/regex/issues/675
-			RegexSetBuilder::new(patterns.map(
-				|pattern| format!("\\A(?:{})\\z", pattern.as_ref())
-			))
-		};
+	pub fn from_patterns(patterns: Patterns<'_>) -> Result<Engine, ErrorList> {
+		let opts = patterns.matcher_opts();
+		let mut rsb = RegexSetBuilder::new(
+			patterns.map(|p| p.make_regex().expect("Unimplemented pattern type used"))
+		);
 		rsb.case_insensitive(opts.ignore_case);
 		match rsb.build() {
 			Ok(v)  => Ok(Engine{
