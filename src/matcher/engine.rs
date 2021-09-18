@@ -17,15 +17,16 @@ pub struct Engine {
 
 impl Engine {
 	pub fn from_patterns(patterns: Patterns<'_>) -> Result<Engine, ErrorList> {
-		let opts = patterns.matcher_opts();
+		let ignore_case = patterns.should_ignore_case();
+		let invert =      patterns.should_invert();
 		let mut rsb = RegexSetBuilder::new(
 			patterns.map(|p| p.make_regex().expect("Unimplemented pattern type used"))
 		);
-		rsb.case_insensitive(opts.ignore_case);
+		rsb.case_insensitive(ignore_case);
 		match rsb.build() {
 			Ok(v)  => Ok(Engine{
 				engine: EngineInner::Regexes(v),
-				invert: opts.invert_match
+				invert
 			}),
 			Err(regex::Error::Syntax(e)) => {
 				let mut errs = ErrorList::new();

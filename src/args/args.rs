@@ -60,10 +60,14 @@ pub struct MatcherOptions {
 	/// Ignore case when matching.
 	#[clap(long, short='i')]
 	pub ignore_case: bool,
-	/// Invert matching.
+	/// Invert matching of starting patterns.
 	/// Treat lines that match as if they do not match, and lines that don't match as if they match.
 	#[clap(long, short='v')]
 	pub invert_match: bool,
+	/// Invert matching of ending patterns.
+	/// Treat lines that match as if they do not match, and lines that don't match as if they match.
+	#[clap(long, short='V')]
+	pub invert_match_end: bool,
 	/// Require patterns to match entire lines to be considered matches.
 	#[clap(long, short='x')]
 	pub line_regexp: bool

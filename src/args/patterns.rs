@@ -5,15 +5,24 @@ use crate::pattern::Pattern;
 
 pub struct Patterns<'a> {
 	opts: &'a super::MatcherOptions,
-	patterns: &'a [String]
+	patterns: &'a [String],
+	invert: bool
 }
 
 impl<'a> Patterns<'a> {
 	pub fn new(args: &'a super::Args) -> (Patterns<'a>, Patterns<'a>) {
 		let opts = &args.match_opts;
 		(
-			Patterns {opts, patterns: args.pattern_opts.patterns_start()},
-			Patterns {opts, patterns: args.pattern_opts.patterns_end()}
+			Patterns {
+				opts,
+				patterns: args.pattern_opts.patterns_start(),
+				invert: opts.invert_match
+			},
+			Patterns {
+				opts,
+				patterns: args.pattern_opts.patterns_end(),
+				invert: opts.invert_match_end
+			}
 		)
 	}
 
@@ -22,8 +31,12 @@ impl<'a> Patterns<'a> {
 		self.patterns.is_empty()
 	}
 
-	pub fn matcher_opts(&self) -> &'a super::MatcherOptions {
-		self.opts
+	pub fn should_invert(&self) -> bool {
+		self.invert
+	}
+
+	pub fn should_ignore_case(&self) -> bool {
+		self.opts.ignore_case
 	}
 
 	fn wrap_plain_pattern(&self, pattern: &'a str) -> Pattern<'a> {

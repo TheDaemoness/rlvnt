@@ -27,6 +27,8 @@ Patterns can be specified using the following options:
 * `-e`/`--regexp`: Specify a "starting" pattern.
 * `-E`/`--regexp-end`: Specify an "ending" pattern.
 * The first positional argument is assumed to be a "starting" pattern if `-e` is not used.
+* `-v`/`--invert-match`: Invert matching for "starting" patterns.
+* `-V`/`--invert-match-end`: Invert matching for "ending" patterns.
 
 **rlvnt** tries to mimic **grep** usage patterns where possible.
 The following flags/options roughly match the behavior found in GNU grep:
@@ -38,7 +40,6 @@ The following flags/options roughly match the behavior found in GNU grep:
 * `-H`/`--with-filename`
 * `-h`/`--no-filename`
 * `-i`/`--ignore-case`
-* `-v`/`--invert-match`
 * `-x`/`--line-regexp`
 
 For more information, run `rlvnt --help`.
