@@ -6,9 +6,11 @@ __A tool for extracting the broadly-defined "relevant" parts of logs.__
 
 [![Build Status](https://github.com/TheDaemoness/rlvnt/actions/workflows/build.yml/badge.svg)](https://github.com/TheDaemoness/rlvnt/actions)
 
-**rlvnt** is a tool to extract ranges of lines from text.
-Its focus is on extracting lines until the last line
-where some condition is met.
+**rlvnt** is a tool to extract ranges of lines from text,
+starting with the first line matches one of a set of "starting" patterns,
+and ending with one of the following:
+* The last line that matches one of the "starting" patterns.
+* The next line that matches one of the "ending" patterns.
 
 **rlvnt** will only fully buffer the input in worst-case scenarios.
 
@@ -18,21 +20,28 @@ where some condition is met.
 Documentation on its regex syntax can be found
 [here](https://docs.rs/regex/1.5.*/regex/index.html#syntax).
 
-## Supported Options
+## Basic Usage
+
+Patterns can be specified using the following options:
+
+* `-e`/`--regexp`: Specify a "starting" pattern.
+* `-E`/`--regexp-end`: Specify an "ending" pattern.
+* The first positional argument is assumed to be a "starting" pattern if `-e` is not used.
 
 **rlvnt** tries to mimic **grep** usage patterns where possible.
-The following flags/options match the behavior found in GNU grep:
+The following flags/options roughly match the behavior found in GNU grep:
 
 * `-` representing standard input in the file list.
 * `-A`/`--after-context`
 * `-B`/`--before-context`
-* `-e`/`--regexp`
 * `-F`/`--fixed-strings`
 * `-H`/`--with-filename`
 * `-h`/`--no-filename`
 * `-i`/`--ignore-case`
 * `-v`/`--invert-match`
 * `-x`/`--line-regexp`
+
+For more information, run `rlvnt --help`.
 
 ## License
 
