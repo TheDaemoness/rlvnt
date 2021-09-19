@@ -38,14 +38,16 @@ pub struct PatternOptions {
 	/// If used multiple times, only one of the patterns must match.
 	#[clap(
 		long="regexp-end", short='E', value_name="PATTERN",
-		multiple_values=false, multiple_occurrences=true
+		multiple_values=false, multiple_occurrences=true,
+		allow_hyphen_values=true
 	)]
 	patterns_end: Vec<String>,
 	/// Specify a starting pattern.
 	/// If used multiple times, only one of the patterns must match.
 	#[clap(
 		long="regexp", short='e', value_name="PATTERN",
-		multiple_values=false, multiple_occurrences=true
+		multiple_values=false, multiple_occurrences=true,
+		allow_hyphen_values=true
 	)]
 	patterns: Vec<String>,
 	#[clap(hidden=true)]
